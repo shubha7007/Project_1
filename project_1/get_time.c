@@ -1,27 +1,116 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
+#define NTP_TIMESTAMP_DELTA 2208988800ull
+
+typedef struct
+  {
+    uint8_t li_vn_mode;
+    uint8_t stratum;
+    uint8_t poll;
+    uint8_t precision;
+    uint32_t rootDelay;
+    uint32_t rootDispersion;
+    uint32_t refId;
+    uint32_t refTm_s;
+    uint32_t refTm_f;
+    uint32_t origTm_s;
+    uint32_t origTm_f;
+    uint32_t rxTm_s;
+    uint32_t rxTm_f;
+    uint32_t txTm_s;
+    uint32_t txTm_f;
+ } ntp_packet; 
+    
+void error( char* msg )
+{
+    perror( msg ); // Print the error message to stderr.
+
+    exit( 0 ); // Quit the process.
+}
 
 int main(int argc, char *argv[])
 {
 
+ if( argc == 1 || argc > 4)
+ {
+  if(argc == 1){
+ 	/* config code */
+  }
+  else{
+	printf("To many arguments ...\nPlease enter  SERVERIP : ZONE : FORMAT\n");
+ 	return 0;
+  }
+ }
+
 char SERVERIP[30];
 char ZONE[12];
 char FORMAT[4];
-
 int temp;
 
-if( argc == 1 || argc > 4)
-{
- if(argc == 1){
-	/* config code */
-	return 0;
- }
- else{
-	printf("To many arguments ...\nPlease enter  SERVERIP : ZONE : FORMAT\n");
-	return 0;
- }
-}
+//////////////// getting time for ntp server ////////////////////
+
+int sockfd, n;
+int portno = 123;
+char* host_name = "us.pool.ntp.org";
+ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+memset( &packet, 0, sizeof( ntp_packet ) );
+
+ *( ( char * ) &packet + 0 ) = 0x1b;
+struct sockaddr_in serv_addr;
+struct hostent *server;
+
+sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+
+  if ( sockfd < 0 )
+    error( "ERROR opening socket" );
+
+  server = gethostbyname( host_name );
+
+  if ( server == NULL )
+    error( "ERROR, no such host" );
+
+
+  bzero( ( char* ) &serv_addr, sizeof( serv_addr ) );
+
+  serv_addr.sin_family = AF_INET;
+
+  bcopy( ( char* )server->h_addr, ( char* ) &serv_addr.sin_addr.s_addr, server->h_length );
+
+  serv_addr.sin_port = htons( portno );
+
+  if ( connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr) ) < 0 )
+    error( "ERROR connecting" );
+
+n = write( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
+
+  if ( n < 0 )
+    error( "ERROR writing to socket" );
+
+n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
+
+  if ( n < 0 )
+    error( "ERROR reading from socket" );
+
+  packet.txTm_s = ntohl( packet.txTm_s ); // Time-stamp seconds.
+  packet.txTm_f = ntohl( packet.txTm_f ); // Time-stamp fraction of a second.
+
+  time_t txTm = ( time_t ) ( packet.txTm_s - NTP_TIMESTAMP_DELTA );
+
+  printf( "Time: %s", ctime( ( const time_t* ) &txTm ) );
+
+//--------------------------------------------------------------------------
+
+//////////////////////// getting format option ////////////////////////////
 
 printf("You have enter  SERVERIP:%s  ZONE: %s  FORMAT: %s\n",argv[1],argv[2],argv[3]);
 
@@ -32,6 +121,9 @@ strcpy(FORMAT,argv[3]);
 temp = atoi(FORMAT);
 
 printf("%d \n",temp);
+
+/////////////////   display time according to option   ////////////////////
+
 
 if(temp == 1){
 	/******** format 1 *********/
@@ -45,7 +137,7 @@ else if(temp == 3){
 else if(temp == 4){
 	/******** format 4 *********/
 }
-
+//-----------------------------------------------------------------------------
 return 0;
 
 }

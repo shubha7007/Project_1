@@ -56,6 +56,10 @@ char ZONE[12];
 char FORMAT[4];
 int temp;
 
+struct tm * ptm;
+
+char buf[256] = {0};
+
 //////////////// getting time for ntp server ////////////////////
 
 int sockfd, n;
@@ -78,7 +82,6 @@ sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
 
   if ( server == NULL )
     error( "ERROR, no such host" );
-
 
   bzero( ( char* ) &serv_addr, sizeof( serv_addr ) );
 
@@ -106,9 +109,7 @@ n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
   time_t txTm = ( time_t ) ( packet.txTm_s - NTP_TIMESTAMP_DELTA );
 
-  printf( "Time: %s", ctime( ( const time_t* ) &txTm ) );
-
-//--------------------------------------------------------------------------
+  ptm = gmtime(&txTm);
 
 //////////////////////// getting format option ////////////////////////////
 
@@ -120,24 +121,30 @@ strcpy(FORMAT,argv[3]);
 
 temp = atoi(FORMAT);
 
-printf("%d \n",temp);
-
 /////////////////   display time according to option   ////////////////////
 
 
 if(temp == 1){
-	/******** format 1 *********/
+  strftime(buf, 256, "%G-%m-%d", ptm);
+  printf("%s",buf);
+  printf ("  %2d:%02d:%02d\n", (ptm->tm_hour+5)%24, ptm->tm_min+30, ptm->tm_sec);
 }
 else if(temp == 2){
-	/******** format 2 *********/
+  strftime(buf, 256, "%H-%m-%d", ptm);
+  printf("%s",buf);
+  printf ("  %2d:%02d:%02d\n", (ptm->tm_hour+5)%24, ptm->tm_min+30, ptm->tm_sec);
 }
 else if(temp == 3){
-	/******** format 3 *********/
+  strftime(buf, 256, "%G-%h-%d <%p>", ptm);
+  printf("%s",buf);
+  printf ("  %2d:%02d:%02d\n", (ptm->tm_hour+5)%24, ptm->tm_min+30, ptm->tm_sec);
 }
 else if(temp == 4){
-	/******** format 4 *********/
+  printf ("%2d:%02d:%02d", (ptm->tm_hour+5)%24, (ptm->tm_min+30)%60, ptm->tm_sec);
+  strftime(buf, 256, "  %d %h %G\n", ptm);
+  printf("%s",buf);
 }
-//-----------------------------------------------------------------------------
+
 return 0;
 
 }

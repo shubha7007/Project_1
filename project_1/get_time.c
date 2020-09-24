@@ -60,11 +60,18 @@ struct tm * ptm;
 
 char buf[256] = {0};
 
+char  buf1[50] = "TZ=";
+char  buf2[50];
+
+
 //////////////// getting time for ntp server ////////////////////
 
 int sockfd, n;
 int portno = 123;
-char* host_name = "us.pool.ntp.org";
+char* host_name = argv[1];
+
+//char* host_name = "us.pool.ntp.org";
+
 ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 memset( &packet, 0, sizeof( ntp_packet ) );
@@ -78,7 +85,10 @@ sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
   if ( sockfd < 0 )
     error( "ERROR opening socket" );
 
-  server = gethostbyname( host_name );
+//  server = gethostbyname( host_name );
+//server= (struct hostent *) gethostbyname((char *)"66.151.147.38");
+
+  server= (struct hostent *) gethostbyname(host_name);
 
   if ( server == NULL )
     error( "ERROR, no such host" );
@@ -87,7 +97,10 @@ sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
 
   serv_addr.sin_family = AF_INET;
 
-  bcopy( ( char* )server->h_addr, ( char* ) &serv_addr.sin_addr.s_addr, server->h_length );
+  //bcopy( ( char* )server->h_addr, ( char* ) &serv_addr.sin_addr.s_addr, server->h_length );
+
+serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
+bzero(&(serv_addr.sin_zero),8);
 
   serv_addr.sin_port = htons( portno );
 
@@ -108,8 +121,25 @@ n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
   packet.txTm_f = ntohl( packet.txTm_f ); // Time-stamp fraction of a second.
 
   time_t txTm = ( time_t ) ( packet.txTm_s - NTP_TIMESTAMP_DELTA );
+//-------------------------------
+  //ptm = gmtime(&txTm);
+//  setenv( "TZ", "IST", 1 );
 
-  ptm = gmtime(&txTm);
+  //setenv( "TZ", argv[2], 1 );
+//  tzset();
+
+//  ptm = localtime(&txTm);
+//-------------------------------
+
+
+//putenv("TZ=Africa/Addis_Ababa");
+strcpy(buf2,argv[2]);
+strcat(buf1,buf2);
+putenv(buf1);
+tzset();
+sleep(2);
+ptm = localtime(&txTm);
+
 
 //////////////////////// getting format option ////////////////////////////
 
@@ -127,20 +157,20 @@ temp = atoi(FORMAT);
 if(temp == 1){
   strftime(buf, 256, "%G-%m-%d", ptm);
   printf("%s",buf);
-  printf ("  %2d:%02d:%02d\n", (ptm->tm_hour+5)%24, ptm->tm_min+30, ptm->tm_sec);
+  printf ("  %2d:%02d:%02d\n", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 }
 else if(temp == 2){
   strftime(buf, 256, "%H-%m-%d", ptm);
   printf("%s",buf);
-  printf ("  %2d:%02d:%02d\n", (ptm->tm_hour+5)%24, ptm->tm_min+30, ptm->tm_sec);
+  printf ("  %2d:%02d:%02d\n", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 }
 else if(temp == 3){
   strftime(buf, 256, "%G-%h-%d <%p>", ptm);
   printf("%s",buf);
-  printf ("  %2d:%02d:%02d\n", (ptm->tm_hour+5)%24, ptm->tm_min+30, ptm->tm_sec);
+  printf ("  %2d:%02d:%02d\n", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 }
 else if(temp == 4){
-  printf ("%2d:%02d:%02d", (ptm->tm_hour+5)%24, (ptm->tm_min+30)%60, ptm->tm_sec);
+  printf ("%2d:%02d:%02d", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
   strftime(buf, 256, "  %d %h %G\n", ptm);
   printf("%s",buf);
 }

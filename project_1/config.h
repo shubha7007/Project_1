@@ -1,0 +1,3 @@
+NTP_IP=66.151.147.38
+ZONE=Africa/Addis_Ababa
+FORMAT=1

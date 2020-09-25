@@ -37,13 +37,17 @@ void error( char* msg )
     exit( 0 ); // Quit the process.
 }
 
+
 int main(int argc, char *argv[])
 {
+
+int chase = 0;
 
  if( argc == 1 || argc > 4)
  {
   if(argc == 1){
- 	/* config code */
+ 	//config code 
+	chase = 1;
   }
   else{
 	printf("To many arguments ...\nPlease enter  SERVERIP : ZONE : FORMAT\n");
@@ -51,26 +55,79 @@ int main(int argc, char *argv[])
   }
  }
 
-char SERVERIP[30];
-char ZONE[12];
-char FORMAT[4];
+
+
+char host_name[100] = {0};
+char  TZ1[50] = "TZ=";
+char  TZ2[50];
+char FORMAT[10];
 int temp;
 
-struct tm * ptm;
+FILE * f1;
+char buf3[10000];
+char * pos = NULL;
 
+struct tm * ptm;
 char buf[256] = {0};
 
-char  buf1[50] = "TZ=";
-char  buf2[50];
+//-----------------------------------------------
+if(chase==0)
+{
+strcpy(host_name,argv[1]);
+strcpy(TZ2,argv[2]);
+strcat(TZ1,TZ2);
+strcpy(FORMAT,argv[3]);
+}
+else
+{
+f1 = fopen("config.h","r");
 
+if(!f1)
+{
+printf("Error in opening config file\n");
+return 0;
+}
+
+while(fgets(buf3,sizeof(buf3),f1)!=NULL)
+{
+	if(strstr(buf3,"NTP_IP"))
+	{
+	 pos = strstr(buf3,"=");
+	 if(pos)
+	 {
+	  sscanf(pos+1,"%s",host_name);
+	 }
+	}
+	else if(strstr(buf3,"ZONE"))
+	{
+	 pos = strstr(buf3,"=");
+	 if(pos)
+	 {
+	  sscanf(pos+1,"%s",TZ2);
+	  strcat(TZ1,TZ2);
+	 }
+	}
+	else if(strstr(buf3,"FORMAT"))
+	{
+	 pos = strstr(buf3,"=");
+	 if(pos)
+	 {
+	  sscanf(pos+1,"%s",FORMAT);
+	 }
+	}
+}
+}
+//----------------------------------------------
+
+temp = atoi(FORMAT);
+//printf("You have enter  SERVERIP:%s  ZONE: %s  FORMAT: %s\n",host_name,TZ1,FORMAT);
+
+//-----------------------------------------------
 
 //////////////// getting time for ntp server ////////////////////
 
 int sockfd, n;
 int portno = 123;
-char* host_name = argv[1];
-
-//char* host_name = "us.pool.ntp.org";
 
 ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -85,9 +142,6 @@ sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
   if ( sockfd < 0 )
     error( "ERROR opening socket" );
 
-//  server = gethostbyname( host_name );
-//server= (struct hostent *) gethostbyname((char *)"66.151.147.38");
-
   server= (struct hostent *) gethostbyname(host_name);
 
   if ( server == NULL )
@@ -96,8 +150,6 @@ sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
   bzero( ( char* ) &serv_addr, sizeof( serv_addr ) );
 
   serv_addr.sin_family = AF_INET;
-
-  //bcopy( ( char* )server->h_addr, ( char* ) &serv_addr.sin_addr.s_addr, server->h_length );
 
 serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
 bzero(&(serv_addr.sin_zero),8);
@@ -122,34 +174,13 @@ n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
   time_t txTm = ( time_t ) ( packet.txTm_s - NTP_TIMESTAMP_DELTA );
 //-------------------------------
-  //ptm = gmtime(&txTm);
-//  setenv( "TZ", "IST", 1 );
 
-  //setenv( "TZ", argv[2], 1 );
-//  tzset();
-
-//  ptm = localtime(&txTm);
-//-------------------------------
-
-
-//putenv("TZ=Africa/Addis_Ababa");
-strcpy(buf2,argv[2]);
-strcat(buf1,buf2);
-putenv(buf1);
+putenv(TZ1);
 tzset();
-sleep(2);
+sleep(1);
 ptm = localtime(&txTm);
 
-
-//////////////////////// getting format option ////////////////////////////
-
-printf("You have enter  SERVERIP:%s  ZONE: %s  FORMAT: %s\n",argv[1],argv[2],argv[3]);
-
-strcpy(SERVERIP,argv[1]);
-strcpy(ZONE,argv[2]);
-strcpy(FORMAT,argv[3]);
-
-temp = atoi(FORMAT);
+//------------------------------
 
 /////////////////   display time according to option   ////////////////////
 

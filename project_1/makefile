@@ -1,7 +1,9 @@
 get_time.o = get_time.c
 
-get_time: get_time.o
-	gcc -o get_time get_time.o
+src_lib.o = src_lib.c
+
+get_time: get_time.o src_lib.o
+	gcc -Wall -o get_time get_time.o src_lib.o
 run:
 	./get_time
 clean:

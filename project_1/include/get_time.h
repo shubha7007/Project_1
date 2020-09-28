@@ -12,32 +12,32 @@
 #define NTP_TIMESTAMP_DELTA 2208988800ull
 
 typedef struct
-  {
-    uint8_t li_vn_mode;
-    uint8_t stratum;
-    uint8_t poll;
-    uint8_t precision;
-    uint32_t rootDelay;
-    uint32_t rootDispersion;
-    uint32_t refId;
-    uint32_t refTm_s;
-    uint32_t refTm_f;
-    uint32_t origTm_s;
-    uint32_t origTm_f;
-    uint32_t rxTm_s;
-    uint32_t rxTm_f;
-    uint32_t txTm_s;
-    uint32_t txTm_f;
- } ntp_packet;
+{
+	uint8_t li_vn_mode;
+	uint8_t stratum;
+	uint8_t poll;
+	uint8_t precision;
+	uint32_t rootDelay;
+	uint32_t rootDispersion;
+	uint32_t refId;
+	uint32_t refTm_s;
+	uint32_t refTm_f;
+	uint32_t origTm_s;
+	uint32_t origTm_f;
+	uint32_t rxTm_s;
+	uint32_t rxTm_f;
+	uint32_t txTm_s;
+	uint32_t txTm_f;
+} ntp_packet;
 
 typedef struct 
- {
+{
 
-    char host_name[100];
-    char zone[100];
-    char format[5];
-    int format_1;
- } config_tmp;
+	char host_name[100];
+	char zone[100];
+	char format[5];
+	int format_1;
+} config_tmp;
 
 void get_config(config_tmp * );
 

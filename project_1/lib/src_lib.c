@@ -10,18 +10,27 @@ void get_config(config_tmp * tmp)
 
 
 	char cwd[200];
+
+	//Getting path of Project directory
+
 	if (getcwd(cwd, sizeof(cwd)) != NULL) {;
 	} else {
 		perror("getcwd() error");
 	}
 
+	//getting config file
+
 	strcat(cwd,"/include/config.h");
+
+	//opening config file
 
 	f1 = fopen(cwd,"r");
 
 	if(!f1){
 		f1 = fopen("/usr/local/include/config.h","r");
 	}
+
+	// filling user parameter into config_tmp structure 
 
 	while(fgets(buf1,sizeof(buf1),f1)!=NULL)
 	{
@@ -65,15 +74,23 @@ time_t get_ntptime(config_tmp * tmp)
 	int sockfd, n;
 	int portno = 123;
 
+	// Create and zero out the packet. All 48 bytes worth.
+
 	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	memset( &packet, 0, sizeof( ntp_packet ) );
 
+	// Set the first byte's bits to 00,011,011 for li = 0, vn = 3, and mode = 3. The rest will be left set to zero.
+
 	*( ( char * ) &packet + 0 ) = 0x1b;
+
+	// Create a UDP socket, convert the host-name to an IP address, set the port number,
+	// connect to the server, send the packet, and then read in the return packet.
+
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
 
-	sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+	sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ); // Create a UDP socket.
 
 	if ( sockfd < 0 )
 		error( "ERROR opening socket" );
@@ -82,6 +99,8 @@ time_t get_ntptime(config_tmp * tmp)
 
 	if ( server == NULL )
 		error( "ERROR, no such host" );
+
+	// Zero out the server address structure.
 
 	bzero( ( char* ) &serv_addr, sizeof( serv_addr ) );
 
@@ -92,8 +111,12 @@ time_t get_ntptime(config_tmp * tmp)
 
 	serv_addr.sin_port = htons( portno );
 
+	// Call up the server using its IP address and port number.
+
 	if ( connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr) ) < 0 )
 		error( "ERROR connecting" );
+
+	// Send it the NTP packet it wants. If n == -1, it failed.
 
 	n = write( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
@@ -105,6 +128,8 @@ time_t get_ntptime(config_tmp * tmp)
 	if ( n < 0 )
 		error( "ERROR reading from socket" );
 
+	// ntohl() converts the bit/byte order from the network's to host's "endianness".
+
 	packet.txTm_s = ntohl( packet.txTm_s ); // Time-stamp seconds.
 
 	return packet.txTm_s;
@@ -114,6 +139,8 @@ void display_time( config_tmp *tmp, struct tm * ptm )
 {
 
 	char buf[100]={0};
+
+	// Display date and time in format given by user
 
 	if(tmp->format_1 == 1){
 		strftime(buf, 256, "%G-%m-%d", ptm);

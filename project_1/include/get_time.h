@@ -11,6 +11,7 @@
 
 #define NTP_TIMESTAMP_DELTA 2208988800ull
 
+/******   Below structure is used to communicate with NTP server   ******/
 typedef struct
 {
 	uint8_t li_vn_mode;
@@ -30,6 +31,7 @@ typedef struct
 	uint32_t txTm_f;
 } ntp_packet;
 
+/***** Below is structure which is used to store user parameter *****/
 typedef struct 
 {
 
@@ -39,6 +41,7 @@ typedef struct
 	int format_1;
 } config_tmp;
 
+/****** Below is declaration of function used in program ******/
 void get_config(config_tmp * );
 
 time_t get_ntptime(config_tmp * );

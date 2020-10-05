@@ -17,13 +17,15 @@ src_lib.o : ${LIB}\src_lib.c
 	gcc -I${INC} -c ${PWD}\lib\src_lib.c
 
 endif
-#else
-ifeq ( $(OS),Linux)
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
 INC=${PWD}/include
 LIB=${PWD}/lib
 
 get_time: get_time.o src_lib.o
 	gcc -Wall -o get_time get_time.o src_lib.o
+	mkdir build
 	mv *.o ./build
 
 get_time.o: ${PWD}/src/get_time.c 

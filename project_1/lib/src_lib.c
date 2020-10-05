@@ -214,9 +214,9 @@ void display_time( config_tmp *tmp, struct tm * ptm )
 	}
 	else if(tmp->format_1 == 4){
 		printf ("%2d:%02d:%02d", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
-		
 		#ifdef linux
-		//strftime(buf, 256, "  %d %h %G\n", ptm);
+   	 	strftime(buf, 256, "  %d %h %G\n", ptm);
+		printf("%s",buf);
 		#endif
 
 		#ifdef _WIN32

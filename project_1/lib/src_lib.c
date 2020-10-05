@@ -27,7 +27,7 @@ void get_config(config_tmp * tmp)
 	f1 = fopen(cwd,"r");
 
 	if(!f1){
-		f1 = fopen("/usr/local/include/config.h","r");
+		//f1 = fopen("/usr/local/include/config.h","r");
 	}
 
 	// filling user parameter into config_tmp structure 
@@ -71,13 +71,30 @@ void error( char* msg )
 time_t get_ntptime(config_tmp * tmp)
 {
 
-	int sockfd, n;
+	int n;
 	int portno = 123;
+	
+	#ifdef linux
+	int sockfd;
+	#endif
+
+	#ifdef _WIN32
+	SOCKET sockfd;
+	WSADATA wsaData;	
+
+	if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
+    {
+    	fprintf(stderr,"WSAStartup failed.\n");
+    	exit(1);
+    }
+
+    #endif
 
 	// Create and zero out the packet. All 48 bytes worth.
 
-	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	//ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
+    ntp_packet packet;
 	memset( &packet, 0, sizeof( ntp_packet ) );
 
 	// Set the first byte's bits to 00,011,011 for li = 0, vn = 3, and mode = 3. The rest will be left set to zero.
@@ -102,12 +119,15 @@ time_t get_ntptime(config_tmp * tmp)
 
 	// Zero out the server address structure.
 
-	bzero( ( char* ) &serv_addr, sizeof( serv_addr ) );
+	//bzero( ( char* ) &serv_addr, sizeof( serv_addr ) );
+
+	memset( (char *) &serv_addr, 0, sizeof( serv_addr ) );
 
 	serv_addr.sin_family = AF_INET;
 
 	serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
-	bzero(&(serv_addr.sin_zero),8);
+	
+	memset( &(serv_addr.sin_zero), 0, sizeof( char[8] ) );
 
 	serv_addr.sin_port = htons( portno );
 
@@ -118,12 +138,23 @@ time_t get_ntptime(config_tmp * tmp)
 
 	// Send it the NTP packet it wants. If n == -1, it failed.
 
+	#ifdef linux
 	n = write( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
+	#endif
 
+	#ifdef _WIN32
+	n = send( sockfd, ( char* ) &packet, sizeof( ntp_packet ),0 );
+	#endif
 	if ( n < 0 )
 		error( "ERROR writing to socket" );
 
+	#ifdef linux
 	n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
+	#endif
+
+	#ifdef _WIN32
+    n = recv( sockfd, ( char* ) &packet, sizeof( ntp_packet ),0 );
+    #endif
 
 	if ( n < 0 )
 		error( "ERROR reading from socket" );
@@ -143,23 +174,54 @@ void display_time( config_tmp *tmp, struct tm * ptm )
 	// Display date and time in format given by user
 
 	if(tmp->format_1 == 1){
+
+		#ifdef linux
 		strftime(buf, 256, "%G-%m-%d", ptm);
+		#endif
+
+		#ifdef _WIN32
+		strftime(buf, 100, "%Y-%m-%d", ptm);
+		#endif
+
 		printf("%s",buf);
 		printf ("  %2d:%02d:%02d\n", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 	}
 	else if(tmp->format_1 == 2){
+
+		#ifdef linux
 		strftime(buf, 256, "%H-%m-%d", ptm);
+		#endif
+
+		#ifdef _WIN32
+		strftime(buf, 256, "%y-%m-%d", ptm);
+		#endif
+
 		printf("%s",buf);
 		printf ("  %2d:%02d:%02d\n", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 	}
 	else if(tmp->format_1 == 3){
+		
+		#ifdef linux
 		strftime(buf, 256, "%G-%h-%d <%p>", ptm);
+        #endif
+
+		#ifdef _WIN32
+        strftime(buf, 256, "%Y-%B-%d <%p>", ptm);
+        #endif
+
 		printf("%s",buf);
 		printf ("  %2d:%02d:%02d\n", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 	}
 	else if(tmp->format_1 == 4){
 		printf ("%2d:%02d:%02d", ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
-		strftime(buf, 256, "  %d %h %G\n", ptm);
+		
+		#ifdef linux
+		//strftime(buf, 256, "  %d %h %G\n", ptm);
+		#endif
+
+		#ifdef _WIN32
+		strftime(buf, 256, "  %d %B %Y\n", ptm);
 		printf("%s",buf);
+		#endif
 	}
 }

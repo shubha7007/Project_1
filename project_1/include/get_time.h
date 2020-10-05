@@ -5,9 +5,19 @@
 #include <fcntl.h>
 #include <time.h>
 #include <sys/types.h>
+
+#ifdef linux
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#endif
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include<windows.h>
+#include<stdint.h>
+
+#endif
 
 #define NTP_TIMESTAMP_DELTA 2208988800ull
 

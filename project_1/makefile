@@ -1,3 +1,24 @@
+#ifeq("${OS}","Windows")
+#ifdef OS
+ifeq ($(OS),Windows_NT)
+PWD=C:\shubham\delete_it\Project_1\project_1
+INC=${PWD}\include
+LIB=${PWD}\lib
+SRC=${PWD}\src
+
+get_time: get_time.o src_lib.o
+	gcc -Wall -o get_time get_time.o src_lib.o -lws2_32 
+
+
+get_time.o: ${PWD}\src\get_time.c 
+	gcc -I${INC} -c ${PWD}\src\get_time.c
+
+src_lib.o : ${LIB}\src_lib.c 
+	gcc -I${INC} -c ${PWD}\lib\src_lib.c
+
+endif
+#else
+ifeq ( $(OS),Linux)
 INC=${PWD}/include
 LIB=${PWD}/lib
 
@@ -21,3 +42,4 @@ install:
 clean:
 	rm -r ./build/*.o
 	rm get_time
+endif

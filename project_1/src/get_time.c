@@ -1,5 +1,9 @@
 #include "get_time.h"
-
+void timeout()
+{
+	printf("Error in ntp server connection\n");
+	exit(1);
+}
 
 int main(int argc, char *argv[])
 {
@@ -7,10 +11,17 @@ int main(int argc, char *argv[])
 	int chase = 0;
 	config_tmp data;
 	struct tm * ptm;
+	
 
+	signal(SIGALRM,timeout);
+	alarm(5);
+
+	
 	// handling command line argument
 
-	if( argc == 1 || (argc != 7))
+	get_config(&data);
+
+	if( argc == 1 || (argc > 7))
 	{
 		if(argc == 1){
 			chase = 1;
@@ -41,12 +52,20 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	else
+
+
+	struct sockaddr_in sa;
+	int result = inet_pton(AF_INET, data.host_name, &sa.sin_addr);
+	if(result == 0)
 	{
+		printf("please enter valid server ip address\n");
+		return 0;
+	}
 
-		// filling structure with parameter given by config file 
-
-		get_config(&data);
+	if((data.format_1 != 1) && (data.format_1 != 2) && (data.format_1 != 3) && (data.format_1 != 4))
+	{
+		printf("please enter valid display format\n");
+		return 0;
 	}
 
 	time_t txTm = get_ntptime(&data);
@@ -69,7 +88,6 @@ int main(int argc, char *argv[])
 
 	//Display data and time
 	display_time(&data , ptm);
-
 	return 0;
 
 }

@@ -5,11 +5,13 @@
 #include <fcntl.h>
 #include <time.h>
 #include <sys/types.h>
+#include<signal.h>
 
 #ifdef linux
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 #endif
 
 #ifdef _WIN32

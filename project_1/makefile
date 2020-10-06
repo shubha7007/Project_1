@@ -42,6 +42,6 @@ install:
 	sudo cp ${INC}/config.h /usr/local/include
 	sudo chmod 777 /usr/local/include/config.h
 clean:
-	rm -r ./build/*.o
 	rm get_time
+	rm -r ./build
 endif

@@ -1,3 +1,3 @@
 NTP_IP=66.151.147.38
-ZONE=Asia/Kolkata
+ZONE=Africa/Addis_Ababa
 FORMAT=1

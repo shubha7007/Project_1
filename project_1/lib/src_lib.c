@@ -1,6 +1,5 @@
 #include "get_time.h"
 
-#define comment 0
 
 void get_config(config_tmp * tmp)
 {
@@ -106,10 +105,6 @@ time_t get_ntptime(config_tmp * tmp)
 
 
 
-
-//-----------------------------------------------------------------------------------------------------------------------------------------
-
-#ifdef comment
 	// Create a UDP socket, convert the host-name to an IP address, set the port number,
 	// connect to the server, send the packet, and then read in the return packet.
 
@@ -144,13 +139,6 @@ time_t get_ntptime(config_tmp * tmp)
 
 	if ( connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr) ) < 0 )
 		error( "ERROR connecting" );
-#endif
-//-------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------
-
 
 	// Send it the NTP packet it wants. If n == -1, it failed.
 
@@ -205,7 +193,7 @@ void display_time( config_tmp *tmp, struct tm * ptm )
 			break;
 		case 2:
 #ifdef linux
-			strftime(buf, 256, "%H-%m-%d", ptm);
+			strftime(buf, 256, "%y-%m-%d", ptm);
 #endif
 
 #ifdef _WIN32

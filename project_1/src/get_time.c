@@ -15,7 +15,8 @@ int main(int argc, char *argv[])
 
 	signal(SIGALRM,timeout);
 	alarm(5);
-
+	
+	memset(&data, 0, sizeof(config_tmp));
 	
 	// handling command line argument
 
@@ -41,14 +42,27 @@ int main(int argc, char *argv[])
 		for(int i=0; i < argc; i++)
 		{
 			if(strcmp(argv[i],"-s")==0){
-				strcpy(data.host_name,argv[++i]);
+				if(++i > (argc-1)){
+				printf("enter server ip\n");
+				exit(0);
+				}
+				strcpy(data.host_name,argv[i]);
 			}
 			else if(strcmp(argv[i],"-z")==0){
+				if(++i > (argc-1)){
+				printf("enter time zone\n");
+				exit(0);
+				}
 				strcpy(data.zone,"TZ=");
-				strcat(data.zone,argv[++i]);
+				strcat(data.zone,argv[i]);
 			}
 			else if(strcmp(argv[i],"-f")==0){
-				data.format_1 = atoi(argv[++i]);
+				if(++i > (argc-1)){
+				printf("enter format\n");
+				exit(0);
+				}
+				data.format_1 = atoi(argv[i]);
+
 			}
 		}
 	}
@@ -88,6 +102,7 @@ int main(int argc, char *argv[])
 
 	//Display data and time
 	display_time(&data , ptm);
+
 	return 0;
 
 }

@@ -3,19 +3,24 @@
 #include "get_time.h"
 #endif
 
-//HANDLE hTimer = NULL;
+void error( char* msg )
+{
+	perror( msg ); // Print the error message to stderr.
+
+	exit( 0 ); // Quit the process.
+}
 
 #ifdef __WIN32
 unsigned long _stdcall Timer(void * arg)
 {
 
-   int nCount = 0;
-    while(nCount < 2)
-    {
-    WaitForSingleObject(hTimer, 5000);
-    nCount++;
-    }
-    exit(0);
+	int nCount = 0;
+	while(nCount < 2)
+	{
+		WaitForSingleObject(hTimer, 5000);
+		nCount++;
+	}
+	exit(0);
 }
 #endif
 
@@ -24,32 +29,6 @@ void timeout()
 	printf("Error in ntp server connection\n");
 	exit(1);
 }
-
-#ifdef __WIN32
-int inet_pton(int af, const char *src, void *dst)
-{
-  struct sockaddr_storage ss;
-  int size = sizeof(ss);
-  char src_copy[INET6_ADDRSTRLEN+1];
-
-  ZeroMemory(&ss, sizeof(ss));
-  
-  strncpy (src_copy, src, INET6_ADDRSTRLEN+1);
-  src_copy[INET6_ADDRSTRLEN] = 0;
-
-  if (WSAStringToAddress(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0) {
-    switch(af) {
-      case AF_INET:
-    *(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;
-    return 1;
-      case AF_INET6:
-    *(struct in6_addr *)dst = ((struct sockaddr_in6 *)&ss)->sin6_addr;
-    return 1;
-    }
-  }
-  return 0;
-}
-#endif 
 
 void get_config(config_tmp * tmp)
 {
@@ -61,7 +40,6 @@ void get_config(config_tmp * tmp)
 	FILE * f1, *fp;
 	int status;
 
-	
 
 	//getting config file
 #ifdef linux
@@ -81,8 +59,6 @@ void get_config(config_tmp * tmp)
 		printf("Error in closing pipe fp\n");
 	}
 
-
-
 	//opening config file
 
 	f1 = fopen(buf3,"r");
@@ -91,19 +67,18 @@ void get_config(config_tmp * tmp)
 		exit(0);
 	}
 #endif
-		//----------------------------------
+
 #ifdef _WIN32
-	 char path[200];
- 	 char *cwd = getcwd(path, MAX_PATH);
- 	 strcat(cwd,"\\include\\config.h");
- 	 	f1 = fopen(cwd,"r");
+	char path[200];
+	char *cwd = getcwd(path, MAX_PATH);
+	strcat(cwd,"\\include\\config.h");
+	f1 = fopen(cwd,"r");
 
 	if(!f1){
 		printf("Error : cannot open config file\n");
 		exit(0);
 	}
 #endif
-	//----------------------------------
 
 	// filling user parameter into config_tmp structure 
 
@@ -133,15 +108,6 @@ void get_config(config_tmp * tmp)
 	}
 
 }
-
-void error( char* msg )
-{
-	perror( msg ); // Print the error message to stderr.
-
-	exit( 0 ); // Quit the process.
-}
-
-
 
 time_t get_ntptime(config_tmp * tmp)
 {

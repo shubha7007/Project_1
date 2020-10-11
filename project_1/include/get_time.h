@@ -24,9 +24,6 @@ extern HANDLE hTimer;
 
 #define NTP_TIMESTAMP_DELTA 2208988800ull
 
-//extern HANDLE hTimer;
-
-
 /******   Below structure is used to communicate with NTP server   ******/
 typedef struct
 {
@@ -72,4 +69,4 @@ void display_time( config_tmp *, struct tm * );
 unsigned long _stdcall Timer(void *);
 #endif
 
-void timeout(void);
+void timeout();

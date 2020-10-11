@@ -1,8 +1,4 @@
-#ifeq("${OS}","Windows")
-#ifdef OS
 ifeq ($(OS),Windows_NT)
-#PWD=C:\Users\shubham\lol\Project_1\project_1
-#PWD = Get-Location
 PWD:= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 INC=${PWD}\include
 LIB=${PWD}\lib
@@ -10,7 +6,6 @@ SRC=${PWD}\src
 
 get_time: get_time.o src_lib.o
 	gcc -Wall -o get_time get_time.o src_lib.o -lws2_32 
-
 
 get_time.o: ${PWD}\src\get_time.c 
 	gcc -I${INC} -c ${PWD}\src\get_time.c

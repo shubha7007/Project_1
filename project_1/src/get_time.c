@@ -13,38 +13,29 @@ int main(int argc, char *argv[])
 	int chase = 0;
 	config_tmp data;
 	struct tm * ptm;
-	
-    //--------------------------------------------------------------
 
-    #ifdef linux
+
+#ifdef linux
 	signal(SIGALRM,timeout);
 	alarm(5);
-	#endif
+#endif
 
-	//--------------------------------------------------------------
+#ifdef __WIN32
+	int t;
+	DWORD tid;
+	hTimer = CreateEvent(NULL, FALSE, FALSE, NULL);
+	CreateThread(NULL, 0,Timer, NULL, 0, &tid);
+	SetEvent(hTimer);
 
-	#ifdef __WIN32
-	
-    DWORD tid;
-	//HANDLE hTimer = NULL;
-    hTimer = CreateEvent(NULL, FALSE, FALSE, NULL);
-    CreateThread(NULL, 0,Timer, NULL, 0, &tid);
-    int t;
-    SetEvent(hTimer);
-
-    WSADATA wsaData;	
+	WSADATA wsaData;	
 
 	if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
 	{
 		fprintf(stderr,"WSAStartup failed.\n");
 		exit(1);
 	}
+#endif
 
-    #endif
- 
-
-	//--------------------------------------------------------------
-	
 	memset(&data, 0, sizeof(config_tmp));
 
 	// handling command line argument
@@ -71,23 +62,23 @@ int main(int argc, char *argv[])
 		{
 			if(strcmp(argv[i],"-s")==0){
 				if(++i > (argc-1)){
-				printf("enter server ip\n");
-				exit(0);
+					printf("enter server ip\n");
+					exit(0);
 				}
 				strcpy(data.host_name,argv[i]);
 			}
 			else if(strcmp(argv[i],"-z")==0){
 				if(++i > (argc-1)){
-				printf("enter time zone\n");
-				exit(0);
+					printf("enter time zone\n");
+					exit(0);
 				}
 				strcpy(data.zone,"TZ=");
 				strcat(data.zone,argv[i]);
 			}
 			else if(strcmp(argv[i],"-f")==0){
 				if(++i > (argc-1)){
-				printf("enter format\n");
-				exit(0);
+					printf("enter format\n");
+					exit(0);
 				}
 				data.format_1 = atoi(argv[i]);
 
@@ -95,25 +86,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	
-/*
-#ifdef linux
-	int result = inet_pton(AF_INET, data.host_name, &sa.sin_addr);
-	if(result == 0)
-	{
-		printf("please enter valid server ip address\n");
-		return 0;
-	}
-#endif
-*/
 
 	struct sockaddr_in sa;
 	struct hostent * server;
 	server= (struct hostent *) gethostbyname(data.host_name);	
-		if ( server == NULL ){
+	if ( server == NULL ){
 		printf("please enter valid server ip\n");
 		return 0;
-		}
+	}
 
 	if((data.format_1 != 1) && (data.format_1 != 2) && (data.format_1 != 3) && (data.format_1 != 4))
 	{
@@ -143,9 +123,9 @@ int main(int argc, char *argv[])
 	display_time(&data , ptm);
 
 #ifdef __WIN32
-    CloseHandle(hTimer);
+	CloseHandle(hTimer);
 #endif
-    
+
 	return 0;
 
 }

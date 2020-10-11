@@ -1,9 +1,10 @@
+#ifndef _HEADER
+#define _HEADER
 #include "get_time.h"
-void timeout()
-{
-	printf("Error in ntp server connection\n");
-	exit(1);
-}
+#endif
+
+
+HANDLE hTimer = NULL;
 
 int main(int argc, char *argv[])
 {
@@ -12,14 +13,31 @@ int main(int argc, char *argv[])
 	config_tmp data;
 	struct tm * ptm;
 	
+    //--------------------------------------------------------------
 
+    #ifdef linux
 	signal(SIGALRM,timeout);
 	alarm(5);
+	#endif
+
+	//--------------------------------------------------------------
+
+	#ifdef __WIN32
+	
+    DWORD tid;
+	//HANDLE hTimer = NULL;
+    hTimer = CreateEvent(NULL, FALSE, FALSE, NULL);
+    CreateThread(NULL, 0,Timer, NULL, 0, &tid);
+    int t;
+    SetEvent(hTimer);
+    #endif
+ 
+
+	//--------------------------------------------------------------
 	
 	memset(&data, 0, sizeof(config_tmp));
-	
-	// handling command line argument
 
+	// handling command line argument
 	get_config(&data);
 
 	if( argc == 1 || (argc > 7))
@@ -67,14 +85,30 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
 	struct sockaddr_in sa;
+/*
+#ifdef linux
 	int result = inet_pton(AF_INET, data.host_name, &sa.sin_addr);
 	if(result == 0)
 	{
 		printf("please enter valid server ip address\n");
 		return 0;
 	}
+#endif
+*/
+	WSADATA wsaData;	
+
+	if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
+	{
+		fprintf(stderr,"WSAStartup failed.\n");
+		exit(1);
+	}
+	struct hostent * server;
+	server= (struct hostent *) gethostbyname(data.host_name);	
+		if ( server == NULL ){
+		printf("please enter valid server ip\n");
+		return 0;
+		}
 
 	if((data.format_1 != 1) && (data.format_1 != 2) && (data.format_1 != 3) && (data.format_1 != 4))
 	{
@@ -102,6 +136,8 @@ int main(int argc, char *argv[])
 
 	//Display data and time
 	display_time(&data , ptm);
+
+    CloseHandle(hTimer);
 
 	return 0;
 

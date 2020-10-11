@@ -18,10 +18,14 @@
 #include <winsock2.h>
 #include<windows.h>
 #include<stdint.h>
-
+#include <Ws2tcpip.h>
+//#include <sys/time.h>
 #endif
 
 #define NTP_TIMESTAMP_DELTA 2208988800ull
+
+extern HANDLE hTimer;
+
 
 /******   Below structure is used to communicate with NTP server   ******/
 typedef struct
@@ -64,3 +68,4 @@ time_t get_ntptime(config_tmp * );
 
 void display_time( config_tmp *, struct tm * );
 
+unsigned long _stdcall Timer(void *);

@@ -3,8 +3,9 @@
 #include "get_time.h"
 #endif
 
-
+#ifdef __WIN32
 HANDLE hTimer = NULL;
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -30,6 +31,15 @@ int main(int argc, char *argv[])
     CreateThread(NULL, 0,Timer, NULL, 0, &tid);
     int t;
     SetEvent(hTimer);
+
+    WSADATA wsaData;	
+
+	if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
+	{
+		fprintf(stderr,"WSAStartup failed.\n");
+		exit(1);
+	}
+
     #endif
  
 
@@ -85,7 +95,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	struct sockaddr_in sa;
+	
 /*
 #ifdef linux
 	int result = inet_pton(AF_INET, data.host_name, &sa.sin_addr);
@@ -96,13 +106,8 @@ int main(int argc, char *argv[])
 	}
 #endif
 */
-	WSADATA wsaData;	
 
-	if(WSAStartup(MAKEWORD(1,1),&wsaData)!=0)
-	{
-		fprintf(stderr,"WSAStartup failed.\n");
-		exit(1);
-	}
+	struct sockaddr_in sa;
 	struct hostent * server;
 	server= (struct hostent *) gethostbyname(data.host_name);	
 		if ( server == NULL ){
@@ -137,8 +142,10 @@ int main(int argc, char *argv[])
 	//Display data and time
 	display_time(&data , ptm);
 
+#ifdef __WIN32
     CloseHandle(hTimer);
-
+#endif
+    
 	return 0;
 
 }

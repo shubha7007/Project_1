@@ -5,6 +5,7 @@
 
 //HANDLE hTimer = NULL;
 
+#ifdef __WIN32
 unsigned long _stdcall Timer(void * arg)
 {
 
@@ -16,6 +17,7 @@ unsigned long _stdcall Timer(void * arg)
     }
     exit(0);
 }
+#endif
 
 void timeout()
 {

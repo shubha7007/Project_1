@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	config_tmp data;
 	struct tm * ptm;
 
-
+	/*used to register alarm signal with handle */
 #ifdef linux
 	signal(SIGALRM,timeout);
 	alarm(5);
@@ -36,6 +36,8 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+	// clearing data variable 
+
 	memset(&data, 0, sizeof(config_tmp));
 
 	// handling command line argument
@@ -52,7 +54,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
+	// this will execute which user give parameter in command line
 	if(chase==0)
 	{
 
@@ -87,6 +89,8 @@ int main(int argc, char *argv[])
 	}
 
 
+	/***********Used to validate server_ip and format******************/
+
 	struct sockaddr_in sa;
 	struct hostent * server;
 	server= (struct hostent *) gethostbyname(data.host_name);	
@@ -101,13 +105,12 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	
+	/***********Used to get ntp time****************/
 	time_t txTm = get_ntptime(&data);
 
-	// Extract the 32 bits that represent the time-stamp seconds (since NTP epoch) from when the packet left the server.
-	// Subtract 70 years worth of seconds from the seconds since 1900.
-	// This leaves the seconds since the UNIX epoch of 1970.
-	// (1900)------------------(1970)**************************************(Time Packet Left the Server)
 
+	/***********Used to get UTC time */
 	txTm = ( time_t ) ( txTm - NTP_TIMESTAMP_DELTA );
 
 	//Setting TV variable

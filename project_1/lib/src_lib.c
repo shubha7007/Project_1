@@ -3,6 +3,8 @@
 #include "get_time.h"
 #endif
 
+
+/**********used to print error************/
 void error( char* msg )
 {
 	perror( msg ); // Print the error message to stderr.
@@ -10,7 +12,8 @@ void error( char* msg )
 	exit( 0 ); // Quit the process.
 }
 
-#ifdef __WIN32
+/***********call when timer event occur in windows**************/
+#ifdef __WIN
 unsigned long _stdcall Timer(void * arg)
 {
 
@@ -20,16 +23,19 @@ unsigned long _stdcall Timer(void * arg)
 		WaitForSingleObject(hTimer, 5000);
 		nCount++;
 	}
+	printf("Error in ntp server connection\n");
 	exit(0);
 }
 #endif
 
+/***********call when alarm event occur in linux**************/
 void timeout()
 {
 	printf("Error in ntp server connection\n");
 	exit(1);
 }
 
+/**********Used to get configuration from config filr**************/
 void get_config(config_tmp * tmp)
 {
 
@@ -46,7 +52,7 @@ void get_config(config_tmp * tmp)
 	fp = popen("find . -name config.h","r");
 	if(fp==NULL)
 	{
-		printf("Error : cannot open config file\n");
+		printf("Error : cannot find config file\n");
 		exit(0);
 	}
 
@@ -64,6 +70,7 @@ void get_config(config_tmp * tmp)
 	f1 = fopen(buf3,"r");
 
 	if(!f1){
+		printf("Error : cannot open config file\n");
 		exit(0);
 	}
 #endif
@@ -108,6 +115,11 @@ void get_config(config_tmp * tmp)
 	}
 
 }
+
+/**************Used to get NTP time from NTP_SERVER ****************/
+/*
+return type : time_t (time in seconds)
+*/
 
 time_t get_ntptime(config_tmp * tmp)
 {
@@ -207,6 +219,9 @@ time_t get_ntptime(config_tmp * tmp)
 	return packet.txTm_s;
 }
 
+
+
+/****************Used to display time is specific format*************************/
 void display_time( config_tmp *tmp, struct tm * ptm )
 {
 

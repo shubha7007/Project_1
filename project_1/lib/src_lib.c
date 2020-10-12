@@ -29,12 +29,13 @@ unsigned long _stdcall Timer(void * arg)
 #endif
 
 /*********** call when alarm event occur in linux **************/
+#ifdef linux
 void timeout()
 {
 	printf("Error in ntp server connection\n");
 	exit(1);
 }
-
+#endif
 /******** Used to get configuration from config file ***********/
 void get_config(config_tmp * tmp)
 {
@@ -118,8 +119,8 @@ void get_config(config_tmp * tmp)
 
 /**************Used to get NTP time from NTP_SERVER ****************/
 /*
-return type : time_t (time in seconds)
-*/
+   return type : time_t (time in seconds)
+ */
 
 time_t get_ntptime(config_tmp * tmp)
 {

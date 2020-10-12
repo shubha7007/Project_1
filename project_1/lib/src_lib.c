@@ -4,7 +4,7 @@
 #endif
 
 
-/**********used to print error************/
+/****************     used to print error    ********************/
 void error( char* msg )
 {
 	perror( msg ); // Print the error message to stderr.
@@ -12,8 +12,8 @@ void error( char* msg )
 	exit( 0 ); // Quit the process.
 }
 
-/***********call when timer event occur in windows**************/
-#ifdef __WIN
+/********** call when timer event occur in windows **************/
+#ifdef __WIN32
 unsigned long _stdcall Timer(void * arg)
 {
 
@@ -28,14 +28,14 @@ unsigned long _stdcall Timer(void * arg)
 }
 #endif
 
-/***********call when alarm event occur in linux**************/
+/*********** call when alarm event occur in linux **************/
 void timeout()
 {
 	printf("Error in ntp server connection\n");
 	exit(1);
 }
 
-/**********Used to get configuration from config filr**************/
+/******** Used to get configuration from config file ***********/
 void get_config(config_tmp * tmp)
 {
 
